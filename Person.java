@@ -16,13 +16,14 @@ public class Person {
             return;
         }
         person_elev = elev;
+        inElevator = true;
         elev.requestFloor(desired_floor);
     }
 
     public void chooseDirection (int set_dir) {
         if (desired_floor - curr_floor > 0) {
             dir = 1;
-        } else {
+        } else if (desired_floor - curr_floor < 0) {
             dir = -1;
         }
     }
