@@ -6,8 +6,8 @@ public class Elevator {
     private int curr_floor;
     private int goal_floor; // -1 = no goal set
     private int max_floors;
-    private boolean downReqExists;
-    private boolean upReqExists;
+    private int numDownReqs;
+    private int numUpReqs;
 
     /* Createa a private list that keeps an up to date list of requests
      * for the elevator. A request is queued within the upRequests or downRequests
@@ -20,8 +20,8 @@ public class Elevator {
         curr_floor    = 0;
         goal_floor    = -1;
         dir           = 0;
-        upReqExists   = false;
-        downReqExists = false;
+        numDownReqs   = 0;
+        numUpReqs     = 0;
 
         if (init_max_floors > 0) {
             max_floors = init_max_floors;
@@ -60,12 +60,12 @@ public class Elevator {
 
     private void setDirection () {
         System.out.println("Checking direction");
-        if (upReqExists) {
+        if (numUpReqs > 0) {
             dir = 1;
             System.out.println("Direction set to up");
             return;
         } 
-        if (downReqExists) {
+        if (numDownReqs > 0) {
             dir = -1;
             System.out.println("Direction set to down");
             return;
@@ -78,59 +78,83 @@ public class Elevator {
     public void enqueueFloorRequest (int desired_floor) {
         boolean isAboveCurrFloor = (desired_floor - curr_floor > 0) ? true : false;
         if (isAboveCurrFloor) {
-            upRequests[desired_floor] = true;
-            if (upReqExists == false) {
-                upReqExists = true;
+            if (!upRequests[desired_floor]) {
+                upRequests[desired_floor] = true;
+                numUpReqs++;
             }
         } else {
-            downRequests[desired_floor] = true;
-            if (downReqExists == false) {
-                System.out.println("downreqExists set");
-                downReqExists = true;
+            if (!downRequests[desired_floor]) {
+                downRequests[desired_floor] = true;
+                numDownReqs++;
             }
         }
+    }
+
+    /* 
+     * Check to see if there any requests. If so, look for the next request.
+     * If not, return -1 to indicate there are no floors to set.
+     */
+    private int getGoalFloorUp () {
+        int idx;
+        if (numUpReqs > 0) {
+            for (idx = curr_floor + 1; idx < max_floors; idx += 1) {
+                if (upRequests[idx] == true) {
+                    numUpReqs--;
+                    return idx;
+                }
+            }
+        } 
+        return -1;
+    }
+
+    /*
+     * Check to see if there any requests. If so, look for the next request. 
+     * If not, return -1 to indicate there are no floors to set.
+     */
+    private int getGoalFloorDown () {
+        int idx;
+        if (numDownReqs > 0) {
+            for (idx = curr_floor - 1; idx >= 0; idx -= 1) {
+                if (downRequests[idx] == true) {
+                    numDownReqs--;
+                    return idx;
+                }
+            }
+        }
+        return -1;
     }
 
     private void setGoalFloor () {
         int idx;
         switch (dir) {
         case 1:
-            for (idx = curr_floor + 1; idx < max_floors; idx += 1) {
-                if (upRequests[idx] == true) {
-                    goal_floor = idx;
-                    return;
-                }
-            }
-            upReqExists = false;
-            goal_floor = -1;
-            dir = 0;
+            goal_floor = getGoalFloorUp();
             break;
         case -1:
-            for (idx = curr_floor - 1; idx >= 0; idx -= 1) {
-                if (downRequests[idx] == true) {
-                    goal_floor = idx;
-                    return;
-                }
-            }
-            downReqExists = false;
-            goal_floor = -1;
-            dir = 0;
+            goal_floor = getGoalFloorDown();
             break;
         default:
             /* No floors to go to in direction it's currently in. Stay put. */
             goal_floor = -1;
             break;
         }
+        if (goal_floor == -1) {
+            dir = 0;
+        }
         return;
     }
 
+    /* 
+     * If we're either at the top or bottom floors, check to see if there are
+     * any requests for the other direction. Set the proper direction and set 
+     * the next goal floor for the next time step (i.e. advance()).
+     */
     private void advanceToNextFloor () {
         /* What if the current floor is at the topmost or bottommost floor? */
         switch (dir) {
         case 1:
             if (curr_floor == max_floors - 1) { //Topmost floor
-                upReqExists = false;
-                dir = (downReqExists) ? -1 : 0;
+                dir = (numDownReqs > 0) ? -1 : 0;
                 setGoalFloor();
             } else {
                 curr_floor++;
@@ -138,8 +162,7 @@ public class Elevator {
             break;
         case -1:
             if (curr_floor == 0) { //Ground floor
-                downReqExists = false;
-                dir = (upReqExists) ? 1 : 0;
+                dir = (numUpReqs > 0) ? 1 : 0;
                 setGoalFloor();
             } else {
                 curr_floor--;
