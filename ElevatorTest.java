@@ -6,7 +6,7 @@ public class ElevatorTest {
 
         Elevator e = new Elevator(0, 5);
         e.getState();
-        e.requestFloor(5);
+        e.enqueueFloorRequest(5);
         e.advance();
         e.getState();
         e.advance();

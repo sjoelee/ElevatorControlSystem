@@ -93,7 +93,7 @@ public class Elevator {
         }
     }
 
-    private int setGoalFloorHelper (int[] requests) {
+    private int setGoalFloorHelper (boolean[] requests) {
         int idx;
         for (idx = curr_floor + 1; idx < max_floors; idx++) {
             if (requests[idx] == true) {
@@ -102,7 +102,8 @@ public class Elevator {
         }
         return -1;
     }
-    private void setGoalFloor () {
+
+    private void setGoalFloor (int dir) {
         switch (dir) {
         case 1:
             goal_floor = setGoalFloorHelper(upRequests);
@@ -184,40 +185,7 @@ public class Elevator {
         default:
             break;
         }
-        if (dir == 1) {
-            // Finished up requests
-            if (curr_floor == max_floors - 1) {
-                upReqExists = false;
-                if (downReqExists) {
-                    dir = -1; 
-                    setGoalFloor();
-                }
-            } else if (curr_floor >= 0) {
-                curr_floor++;
-                if (curr_floor == goal_floor) {
-                    downRequests[curr_floor] = false;
-                    setGoalFloor();
-                }
-            }
-        }
-        if (dir == -1) {
-            if (curr_floor == 0) {
-                // Finished down requests
-                downReqExists = false;
-                if (upReqExists) {
-                    dir = 1;
-                    setGoalFloor();
-                } 
-            } else if (curr_floor <= max_floors - 1) {
-                curr_floor++;
-                if (curr_floor == goal_floor) {
-                    upRequests[curr_floor] = false;
-                    setGoalFloor();
-                }
-            }
-        } 
 
-        /* If nothing, then stay put. */
         return;
     }
 }
