@@ -182,12 +182,6 @@ public class Elevator {
         } 
     }
 
-    /* Questions:
-     *   1. How do I know if I'm done with all my requests? I should not always be 
-     *      checking to see if my request array is empty. Keep a counter? But what
-     *      if a person enqueues the same request?
-     */
-
     /* Advancing one time unit. Finish servicing requests in a specific
      * direction. Once requests are fully serviced, see if there exists 
      * requests for the other direction.
